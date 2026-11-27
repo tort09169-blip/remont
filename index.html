@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Ремонт телефонов</title>
+<link href="https://fonts.googleapis.com/css2?family=Unbounded:wght@600;800&family=Manrope:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+:root{
+  --bg:#F1F3F5; --surface:#FFFFFF; --ink:#12161C; --muted:#5A6572; --line:#D8DEE4;
+  --accent:#D63F0A; --accent-ink:#FFFFFF;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+  color-scheme:light;
+}
+@media (prefers-color-scheme: dark){
+  :root:not([data-theme="light"]){
+    --bg:#101317; --surface:#181D23; --ink:#EEF1F4; --muted:#9AA6B2; --line:#2A323B;
+    --accent:#FF7A45; --accent-ink:#1A0D06; color-scheme:dark;
+  }
+}
+:root[data-theme="dark"]{
+  --bg:#101317; --surface:#181D23; --ink:#EEF1F4; --muted:#9AA6B2; --line:#2A323B;
+  --accent:#FF7A45; --accent-ink:#1A0D06; color-scheme:dark;
+}
+*{box-sizing:border-box}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+body{margin:0;background:var(--bg);color:var(--ink);font:500 17px/1.5 "Manrope",system-ui,sans-serif;min-height:100vh}
+h1,h2{font-family:"Unbounded",system-ui,sans-serif;margin:0;line-height:1.1}
+.wrap{max-width:640px;margin:0 auto;padding:0 20px 48px}
+.top{display:flex;justify-content:space-between;align-items:center;padding:18px 0}
+.theme{border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:999px;padding:7px 14px;font:500 14px "Manrope",sans-serif;cursor:pointer}
+button:focus-visible,a:focus-visible{outline:3px solid var(--accent);outline-offset:2px}
+.hero{padding:36px 0 28px}
+.hero h1{font-size:clamp(36px,10vw,60px);font-weight:800;letter-spacing:-.02em}
+.hero p{color:var(--muted);margin:14px 0 0;max-width:30em}
+.big{display:flex;flex-direction:column;gap:6px;width:100%;text-align:left;text-decoration:none;color:var(--ink);background:var(--surface);border:1.5px solid var(--line);border-radius:18px;padding:22px 20px;margin-top:14px;font-family:inherit;cursor:pointer}
+.big b{font:600 21px "Unbounded",sans-serif}
+.big span{color:var(--muted);font-size:15px}
+.big.main{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.big.main span{color:inherit;opacity:.85}
+.back{border:0;background:none;color:var(--muted);font:700 16px "Manrope",sans-serif;padding:6px 0;cursor:pointer;margin:6px 0 14px}
+h2{font-size:clamp(26px,7vw,36px);font-weight:800}
+.sub{color:var(--muted);margin:8px 0 18px}
+.brand{font:700 13px "Manrope",sans-serif;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin:24px 0 10px}
+.models{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.model{border:1.5px solid var(--line);background:var(--surface);color:var(--ink);border-radius:14px;padding:16px 14px;font:700 16px "Manrope",sans-serif;text-align:left;cursor:pointer;min-height:64px}
+.model:active{border-color:var(--accent)}
+.list{background:var(--surface);border:1.5px solid var(--line);border-radius:18px;overflow:hidden}
+.row{display:flex;justify-content:space-between;gap:14px;align-items:center;padding:16px 18px;border-bottom:1px solid var(--line)}
+.row:last-child{border:0}
+.row small{display:block;color:var(--muted);font-weight:500;font-size:14px}
+.price{font:600 18px "Unbounded",sans-serif;white-space:nowrap}
+.free{color:var(--accent)}
+.note{color:var(--muted);font-size:14px;margin:14px 0 0}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="top"><span style="font-weight:700">Сервис</span><button class="theme" id="theme" type="button">Тема</button></div>
+  <main id="app"></main>
+</div>
+<script>
+const TG="vSATURNv";
+const repairs=[
+ ["Замена экрана","дисплейный модуль, 1–2 часа",4500],
+ ["Замена аккумулятора","около 40 минут",2000],
+ ["Замена разъема зарядки","1–2 часа",1800],
+ ["Замена задней крышки","около 1 часа",2500],
+ ["Замена стекла камеры","около 30 минут",900],
+ ["Замена динамика или микрофона","около 1 часа",1500],
+ ["Чистка после попадания влаги","1–2 дня",2000],
+ ["Диагностика","определим поломку",0]
+];
+const models=[
+ ["iphone-11","Apple","iPhone 11",1.2],["iphone-12","Apple","iPhone 12",1.4],
+ ["iphone-13","Apple","iPhone 13",1.7],["iphone-14","Apple","iPhone 14",2],
+ ["galaxy-a54","Samsung","Galaxy A54",0.9],["galaxy-s22","Samsung","Galaxy S22",1.5],
+ ["galaxy-s23","Samsung","Galaxy S23",1.7],
+ ["redmi-note-11","Xiaomi","Redmi Note 11",0.8],["redmi-note-12","Xiaomi","Redmi Note 12",0.85],
+ ["poco-x5","Xiaomi","Poco X5",0.85]
+];
+const app=document.getElementById("app");
+const fmt=n=>n===0?"Бесплатно":n.toLocaleString("ru-RU")+" ₽";
+const price=(base,k)=>base===0?0:Math.round(base*k/50)*50;
+function home(){
+  app.innerHTML='<section class="hero"><h1>Ремонт телефонов</h1><p>Выберите модель, посмотрите цены на ремонт или сразу напишите менеджеру.</p></section>'+
+  '<button class="big main" id="go"><b>Ремонт и цены</b><span>Выберите модель телефона</span></button>'+
+  '<a class="big" href="https://t.me/'+TG+'" target="_blank" rel="noopener"><b>Написать менеджеру</b><span>Откроется личный чат в Telegram</span></a>';
+  document.getElementById("go").onclick=()=>location.hash="models";
+}
+function list(){
+  let h='<button class="back" id="b">← Назад</button><h2>Выберите модель</h2><p class="sub">Нажмите на свой телефон, чтобы увидеть цены.</p>';
+  [...new Set(models.map(m=>m[1]))].forEach(b=>{
+    h+='<div class="brand">'+b+'</div><div class="models">'+
+      models.filter(m=>m[1]===b).map(m=>'<button class="model" data-id="'+m[0]+'">'+m[2]+'</button>').join("")+'</div>';
+  });
+  app.innerHTML=h;
+  document.getElementById("b").onclick=()=>location.hash="";
+  app.querySelectorAll(".model").forEach(x=>x.onclick=()=>location.hash="m-"+x.dataset.id);
+}
+function model(id){
+  const m=models.find(x=>x[0]===id); if(!m){location.hash="models";return}
+  const msg=encodeURIComponent("Здравствуйте! Хочу узнать о ремонте: "+m[2]);
+  app.innerHTML='<button class="back" id="b">← К моделям</button><h2>'+m[2]+'</h2><p class="sub">Ремонт и замена деталей</p>'+
+  '<div class="list">'+repairs.map(r=>{const p=price(r[2],m[3]);
+    return '<div class="row"><div>'+r[0]+'<small>'+r[1]+'</small></div><div class="price'+(p===0?' free':'')+'">'+fmt(p)+'</div></div>'}).join("")+'</div>'+
+  '<p class="note">Цены ориентировочные: точную стоимость менеджер назовет после диагностики.</p>'+
+  '<a class="big main" href="https://t.me/'+TG+'?text='+msg+'" target="_blank" rel="noopener"><b>Записаться на ремонт</b><span>Написать менеджеру в Telegram</span></a>';
+  document.getElementById("b").onclick=()=>location.hash="models";
+}
+function route(){
+  const h=location.hash.slice(1);
+  if(h==="models")list(); else if(h.startsWith("m-"))model(h.slice(2)); else home();
+  window.scrollTo(0,0);
+}
+window.addEventListener("hashchange",route); route();
+document.getElementById("theme").onclick=()=>{
+  const r=document.documentElement;
+  r.setAttribute("data-theme",getComputedStyle(r).colorScheme==="dark"?"light":"dark");
+};
+</script>
+</body>
+</html>
